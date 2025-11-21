@@ -1,20 +1,29 @@
 package modelo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Clase DAO (Data Access Object) para gestionar usuarios
- * Almacena usuarios en memoria (ArrayList estático)
- * En el futuro migrará a base de datos
+ * Utiliza múltiples estructuras de datos para optimizar búsquedas:
+ * - ArrayList: Para iteración y mantenimiento del orden
+ * - HashMap: Para búsqueda rápida O(1) por ID y por email
  */
 public class UsuarioData {
-    
-    //   ALMACENAMIENTO EN MEMORIA  
-    
+
+    //   ALMACENAMIENTO EN MEMORIA
+
+    // Lista principal (mantiene orden de inserción)
     private static List<Usuario> listaUsuarios = new ArrayList<>();
-    
+
+    // HashMap para búsqueda rápida por ID - Complejidad: O(1)
+    private static HashMap<String, Usuario> usuariosPorId = new HashMap<>();
+
+    // HashMap para búsqueda rápida por email - Complejidad: O(1)
+    private static HashMap<String, Usuario> usuariosPorEmail = new HashMap<>();
+
     private static Usuario usuarioActual = null;
     
     //   CONSTRUCTOR  
@@ -29,6 +38,7 @@ public class UsuarioData {
     
     /**
      * Registra un nuevo usuario en el sistema
+     * Actualiza todas las estructuras de datos (ArrayList y HashMaps)
      * @param usuario Usuario a registrar
      * @return true si se registró exitosamente, false si el email ya existe
      */
@@ -37,14 +47,18 @@ public class UsuarioData {
         if (existeEmail(usuario.getEmail())) {
             return false;
         }
-        
+
         // Generar ID único si no tiene
         if (usuario.getUsuarioId() == null || usuario.getUsuarioId().isEmpty()) {
             usuario.setUsuarioId(UUID.randomUUID().toString());
         }
-        
+
+        // Agregar a todas las estructuras de datos
         listaUsuarios.add(usuario);
-        System.out.println("✅ Usuario registrado: " + usuario.getEmail());
+        usuariosPorId.put(usuario.getUsuarioId(), usuario);
+        usuariosPorEmail.put(usuario.getEmail().toLowerCase(), usuario);
+
+        System.out.println("✅ Usuario registrado: " + usuario.getEmail() + " (ID: " + usuario.getUsuarioId() + ")");
         return true;
     }
     
@@ -65,17 +79,23 @@ public class UsuarioData {
     }
     
     /**
-     * Busca un usuario solo por email
+     * Busca un usuario solo por email usando HashMap
+     * Complejidad: O(1) - Búsqueda instantánea
      * @param email Email a buscar
      * @return Usuario si existe, null si no
      */
     public Usuario buscarPorEmail(String email) {
-        for (Usuario u : listaUsuarios) {
-            if (u.getEmail().equalsIgnoreCase(email)) {
-                return u;
-            }
-        }
-        return null;
+        return usuariosPorEmail.get(email.toLowerCase());
+    }
+
+    /**
+     * Busca un usuario por ID usando HashMap
+     * Complejidad: O(1) - Búsqueda instantánea
+     * @param id ID del usuario
+     * @return Usuario si existe, null si no
+     */
+    public Usuario buscarPorId(String id) {
+        return usuariosPorId.get(id);
     }
     
     /**

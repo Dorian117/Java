@@ -1,21 +1,32 @@
 package modelo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
  * Clase DAO (Data Access Object) para gestionar propiedades
- * Almacena propiedades en memoria (ArrayList estático)
- * En el futuro migrará a base de datos
+ * Utiliza múltiples estructuras de datos para optimizar operaciones:
+ * - ArrayList: Para iteración y mantenimiento del orden de inserción
+ * - HashMap: Para búsqueda rápida O(1) por ID
+ * - TreeMap: Para ordenamiento automático por precio (estructura de árbol balanceado)
  */
 public class PropiedadData {
-    
-    //   ALMACENAMIENTO EN MEMORIA  
-    
-    // Lista estática para mantener propiedades entre instancias
+
+    //   ALMACENAMIENTO EN MEMORIA
+
+    // Lista principal (mantiene orden de inserción)
     private static List<Propiedad> listaPropiedades = new ArrayList<>();
+
+    // HashMap para búsqueda rápida por ID - Complejidad: O(1)
+    private static HashMap<String, Propiedad> propiedadesPorId = new HashMap<>();
+
+    // TreeMap para ordenamiento automático por precio - Árbol Red-Black
+    // Permite obtener propiedades ordenadas por precio en O(log n)
+    private static TreeMap<Double, List<Propiedad>> propiedadesPorPrecio = new TreeMap<>();
     
     //   CONSTRUCTOR  
     
@@ -32,6 +43,7 @@ public class PropiedadData {
     
     /**
      * Registra una nueva propiedad en el sistema
+     * Actualiza todas las estructuras de datos (ArrayList, HashMap y TreeMap)
      * @param propiedad Propiedad a registrar
      * @return true si se registró exitosamente
      */
@@ -40,24 +52,33 @@ public class PropiedadData {
         if (propiedad.getPropiedadId() == null || propiedad.getPropiedadId().isEmpty()) {
             propiedad.setPropiedadId(UUID.randomUUID().toString());
         }
-        
+
+        // Agregar a ArrayList
         listaPropiedades.add(propiedad);
-        System.out.println("✅ Propiedad registrada: " + propiedad.getTitulo());
+
+        // Agregar a HashMap por ID
+        propiedadesPorId.put(propiedad.getPropiedadId(), propiedad);
+
+        // Agregar a TreeMap por precio (permite múltiples propiedades con mismo precio)
+        double precio = propiedad.getPrecioPorNoche();
+        if (!propiedadesPorPrecio.containsKey(precio)) {
+            propiedadesPorPrecio.put(precio, new ArrayList<>());
+        }
+        propiedadesPorPrecio.get(precio).add(propiedad);
+
+        System.out.println("✅ Propiedad registrada: " + propiedad.getTitulo() +
+                          " (Precio: $" + String.format("%,.0f", precio) + ")");
         return true;
     }
     
     /**
-     * Busca una propiedad por su ID
+     * Busca una propiedad por su ID usando HashMap
+     * Complejidad: O(1) - Búsqueda instantánea
      * @param id ID de la propiedad
      * @return Propiedad si existe, null si no
      */
     public Propiedad buscarPorId(String id) {
-        for (Propiedad p : listaPropiedades) {
-            if (p.getPropiedadId().equals(id)) {
-                return p;
-            }
-        }
-        return null;
+        return propiedadesPorId.get(id);
     }
     
     /**
@@ -215,7 +236,7 @@ public class PropiedadData {
         p1.agregarServicio("WiFi");
         p1.agregarServicio("Cocina");
         p1.agregarServicio("TV");
-        listaPropiedades.add(p1);
+        registrarPropiedad(p1);
         
         //   PROPIEDAD 2: Bogotá  
         Propiedad p2 = new Propiedad(
@@ -232,7 +253,7 @@ public class PropiedadData {
         p2.agregarServicio("Cocina");
         p2.agregarServicio("Parqueadero");
         p2.agregarServicio("Lavadora");
-        listaPropiedades.add(p2);
+        registrarPropiedad(p2);
         
         //   PROPIEDAD 3: Bogotá  
         Propiedad p3 = new Propiedad(
@@ -247,7 +268,7 @@ public class PropiedadData {
         );
         p3.agregarServicio("WiFi");
         p3.agregarServicio("TV");
-        listaPropiedades.add(p3);
+        registrarPropiedad(p3);
         
         //   PROPIEDAD 4: Bogotá  
         Propiedad p4 = new Propiedad(
@@ -265,7 +286,7 @@ public class PropiedadData {
         p4.agregarServicio("TV");
         p4.agregarServicio("Aire Acondicionado");
         p4.agregarServicio("Parqueadero");
-        listaPropiedades.add(p4);
+        registrarPropiedad(p4);
         
         //   PROPIEDAD 5: Bogotá  
         Propiedad p5 = new Propiedad(
@@ -280,7 +301,7 @@ public class PropiedadData {
         );
         p5.agregarServicio("WiFi");
         p5.agregarServicio("Cocina");
-        listaPropiedades.add(p5);
+        registrarPropiedad(p5);
         
         //   PROPIEDAD 6: Medellín  
         Propiedad p6 = new Propiedad(
@@ -298,7 +319,7 @@ public class PropiedadData {
         p6.agregarServicio("TV");
         p6.agregarServicio("Parqueadero");
         p6.agregarServicio("Piscina");
-        listaPropiedades.add(p6);
+        registrarPropiedad(p6);
         
         //   PROPIEDAD 7: Cartagena  
         Propiedad p7 = new Propiedad(
@@ -316,7 +337,7 @@ public class PropiedadData {
         p7.agregarServicio("TV");
         p7.agregarServicio("Aire Acondicionado");
         p7.agregarServicio("Parqueadero");
-        listaPropiedades.add(p7);
+        registrarPropiedad(p7);
         
         //   PROPIEDAD 8: Cali  
         Propiedad p8 = new Propiedad(
@@ -332,7 +353,7 @@ public class PropiedadData {
         p8.agregarServicio("WiFi");
         p8.agregarServicio("Cocina");
         p8.agregarServicio("TV");
-        listaPropiedades.add(p8);
+        registrarPropiedad(p8);
         
         //   PROPIEDAD 9: Bogotá  
         Propiedad p9 = new Propiedad(
@@ -347,7 +368,7 @@ public class PropiedadData {
         );
         p9.agregarServicio("WiFi");
         p9.agregarServicio("Cocina");
-        listaPropiedades.add(p9);
+        registrarPropiedad(p9);
         
         //   PROPIEDAD 10: Medellín  
         Propiedad p10 = new Propiedad(
@@ -365,7 +386,7 @@ public class PropiedadData {
         p10.agregarServicio("Parqueadero");
         p10.agregarServicio("Piscina");
         p10.agregarServicio("Chimenea");
-        listaPropiedades.add(p10);
+        registrarPropiedad(p10);
         
         System.out.println("✅ Datos de prueba cargados: " + listaPropiedades.size() + " propiedades");
         System.out.println("   - Bogotá: 6 propiedades");
@@ -409,5 +430,170 @@ public class PropiedadData {
         }
         double promedio = sumaPrecios / listaPropiedades.size();
         System.out.println("Precio promedio: $" + String.format("%,.0f", promedio));
+    }
+
+    //   MÉTODOS CON ESTRUCTURAS DE DATOS AVANZADAS
+
+    /**
+     * Obtiene propiedades ordenadas por precio (ascendente)
+     * Utiliza TreeMap (árbol Red-Black) - Complejidad: O(n)
+     * @return Lista de propiedades ordenadas de menor a mayor precio
+     */
+    public List<Propiedad> obtenerPropiedadesOrdenadasPorPrecio() {
+        List<Propiedad> ordenadas = new ArrayList<>();
+        // TreeMap mantiene las claves ordenadas automáticamente
+        for (List<Propiedad> props : propiedadesPorPrecio.values()) {
+            ordenadas.addAll(props);
+        }
+        return ordenadas;
+    }
+
+    /**
+     * Obtiene propiedades ordenadas por precio (descendente)
+     * Utiliza TreeMap en orden inverso - Complejidad: O(n)
+     * @return Lista de propiedades ordenadas de mayor a menor precio
+     */
+    public List<Propiedad> obtenerPropiedadesOrdenadasPorPrecioDesc() {
+        List<Propiedad> ordenadas = new ArrayList<>();
+        // descendingMap() invierte el orden del árbol
+        for (List<Propiedad> props : propiedadesPorPrecio.descendingMap().values()) {
+            ordenadas.addAll(props);
+        }
+        return ordenadas;
+    }
+
+    /**
+     * Obtiene las N propiedades más baratas
+     * Utiliza TreeMap - Complejidad: O(n) donde n es el límite
+     * @param limite Número de propiedades a obtener
+     * @return Lista con las propiedades más baratas
+     */
+    public List<Propiedad> obtenerPropiedadesMasBaratas(int limite) {
+        List<Propiedad> baratas = new ArrayList<>();
+        int contador = 0;
+
+        // Iterar desde el precio más bajo
+        for (List<Propiedad> props : propiedadesPorPrecio.values()) {
+            for (Propiedad p : props) {
+                if (contador >= limite) {
+                    return baratas;
+                }
+                baratas.add(p);
+                contador++;
+            }
+        }
+        return baratas;
+    }
+
+    /**
+     * Obtiene las N propiedades más caras
+     * Utiliza TreeMap en orden inverso - Complejidad: O(n) donde n es el límite
+     * @param limite Número de propiedades a obtener
+     * @return Lista con las propiedades más caras
+     */
+    public List<Propiedad> obtenerPropiedadesMasCaras(int limite) {
+        List<Propiedad> caras = new ArrayList<>();
+        int contador = 0;
+
+        // Iterar desde el precio más alto
+        for (List<Propiedad> props : propiedadesPorPrecio.descendingMap().values()) {
+            for (Propiedad p : props) {
+                if (contador >= limite) {
+                    return caras;
+                }
+                caras.add(p);
+                contador++;
+            }
+        }
+        return caras;
+    }
+
+    /**
+     * Obtiene propiedades en un rango de precios
+     * Utiliza TreeMap.subMap() - Complejidad: O(log n + m) donde m es el resultado
+     * @param precioMin Precio mínimo (inclusive)
+     * @param precioMax Precio máximo (inclusive)
+     * @return Lista de propiedades en el rango de precio
+     */
+    public List<Propiedad> obtenerPropiedadesEnRangoPrecio(double precioMin, double precioMax) {
+        List<Propiedad> enRango = new ArrayList<>();
+
+        // subMap() usa la estructura de árbol para encontrar el rango eficientemente
+        for (List<Propiedad> props : propiedadesPorPrecio.subMap(precioMin, true, precioMax, true).values()) {
+            enRango.addAll(props);
+        }
+
+        return enRango;
+    }
+
+    /**
+     * Obtiene el precio más bajo disponible
+     * Utiliza TreeMap.firstKey() - Complejidad: O(1)
+     * @return Precio mínimo, o 0 si no hay propiedades
+     */
+    public double obtenerPrecioMinimo() {
+        return propiedadesPorPrecio.isEmpty() ? 0 : propiedadesPorPrecio.firstKey();
+    }
+
+    /**
+     * Obtiene el precio más alto disponible
+     * Utiliza TreeMap.lastKey() - Complejidad: O(1)
+     * @return Precio máximo, o 0 si no hay propiedades
+     */
+    public double obtenerPrecioMaximo() {
+        return propiedadesPorPrecio.isEmpty() ? 0 : propiedadesPorPrecio.lastKey();
+    }
+
+    /**
+     * Demuestra el uso de las estructuras de datos
+     */
+    public void demostrarEstructurasDatos() {
+        System.out.println("\n═══════════════════════════════════════════════════");
+        System.out.println("   DEMOSTRACIÓN DE ESTRUCTURAS DE DATOS");
+        System.out.println("═══════════════════════════════════════════════════\n");
+
+        // HashMap - Búsqueda O(1)
+        System.out.println("1️⃣  HASHMAP - Búsqueda por ID en O(1)");
+        if (!listaPropiedades.isEmpty()) {
+            String idPrueba = listaPropiedades.get(0).getPropiedadId();
+            Propiedad encontrada = buscarPorId(idPrueba);
+            System.out.println("   Buscando ID: " + idPrueba.substring(0, 8) + "...");
+            System.out.println("   ✅ Encontrada: " + encontrada.getTitulo());
+        }
+
+        // TreeMap - Ordenamiento automático
+        System.out.println("\n2️⃣  TREEMAP - Árbol Red-Black (ordenado por precio)");
+        System.out.println("   Precios en el árbol: " + propiedadesPorPrecio.keySet());
+        System.out.println("   Precio mínimo: $" + String.format("%,.0f", obtenerPrecioMinimo()));
+        System.out.println("   Precio máximo: $" + String.format("%,.0f", obtenerPrecioMaximo()));
+
+        // Propiedades más baratas
+        System.out.println("\n3️⃣  TOP 3 PROPIEDADES MÁS BARATAS:");
+        List<Propiedad> baratas = obtenerPropiedadesMasBaratas(3);
+        for (int i = 0; i < baratas.size(); i++) {
+            Propiedad p = baratas.get(i);
+            System.out.println("   " + (i + 1) + ". " + p.getTitulo() +
+                             " - $" + String.format("%,.0f", p.getPrecioPorNoche()));
+        }
+
+        // Propiedades más caras
+        System.out.println("\n4️⃣  TOP 3 PROPIEDADES MÁS CARAS:");
+        List<Propiedad> caras = obtenerPropiedadesMasCaras(3);
+        for (int i = 0; i < caras.size(); i++) {
+            Propiedad p = caras.get(i);
+            System.out.println("   " + (i + 1) + ". " + p.getTitulo() +
+                             " - $" + String.format("%,.0f", p.getPrecioPorNoche()));
+        }
+
+        // Rango de precios
+        System.out.println("\n5️⃣  PROPIEDADES ENTRE $100,000 Y $200,000:");
+        List<Propiedad> enRango = obtenerPropiedadesEnRangoPrecio(100000, 200000);
+        System.out.println("   Encontradas: " + enRango.size() + " propiedades");
+        for (Propiedad p : enRango) {
+            System.out.println("   - " + p.getTitulo() +
+                             " ($" + String.format("%,.0f", p.getPrecioPorNoche()) + ")");
+        }
+
+        System.out.println("\n═══════════════════════════════════════════════════\n");
     }
 }
