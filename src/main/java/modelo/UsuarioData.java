@@ -51,12 +51,13 @@ public class UsuarioData {
     /**
      * Busca un usuario por email y contraseña
      * @param email Email del usuario
-     * @param contrasena Contraseña del usuario
+     * @param contrasena Contraseña del usuario (en texto plano)
      * @return Usuario si los datos son correctos, null si no
      */
     public Usuario buscarUsuario(String email, String contrasena) {
         for (Usuario u : listaUsuarios) {
-            if (u.getEmail().equalsIgnoreCase(email) && u.getContrasena().equals(contrasena)) {
+            if (u.getEmail().equalsIgnoreCase(email) &&
+                HashUtil.verificarPassword(contrasena, u.getContrasena())) {
                 return u;
             }
         }
@@ -153,67 +154,69 @@ public class UsuarioData {
     /**
      * Carga usuarios de ejemplo para pruebas
      * Solo se ejecuta una vez al inicio
+     * NOTA: Las contraseñas se almacenan hasheadas con SHA-256
      */
     private void cargarDatosPrueba() {
-        // Usuario Admin
+        // Usuario Admin (contraseña: 1234)
         Usuario admin = new Usuario(
             UUID.randomUUID().toString(),
             "Administrador",
             "admin@admin.com",
             "3001234567",
-            "1234",
+            HashUtil.hashPassword("1234"),
             "Admin"
         );
         listaUsuarios.add(admin);
-        
-        // Viajero de prueba 1
+
+        // Viajero de prueba 1 (contraseña: viajero123)
         Usuario viajero1 = new Usuario(
             UUID.randomUUID().toString(),
             "Carlos Pérez",
             "carlos.perez@gmail.com",
             "3101234567",
-            "viajero123",
+            HashUtil.hashPassword("viajero123"),
             "Viajero"
         );
         listaUsuarios.add(viajero1);
-        
-        // Viajero de prueba 2
+
+        // Viajero de prueba 2 (contraseña: viajero123)
         Usuario viajero2 = new Usuario(
             UUID.randomUUID().toString(),
             "Ana Martínez",
             "ana.martinez@gmail.com",
             "3159876543",
-            "viajero123",
+            HashUtil.hashPassword("viajero123"),
             "Viajero"
         );
         listaUsuarios.add(viajero2);
-        
-        // Anfitrión de prueba 1
+
+        // Anfitrión de prueba 1 (contraseña: anfitrion123)
         Usuario anfitrion1 = new Usuario(
             UUID.randomUUID().toString(),
             "María González",
             "maria.gonzalez@gmail.com",
             "3201234567",
-            "anfitrion123",
+            HashUtil.hashPassword("anfitrion123"),
             "Anfitrion"
         );
         listaUsuarios.add(anfitrion1);
-        
-        // Anfitrión de prueba 2
+
+        // Anfitrión de prueba 2 (contraseña: anfitrion123)
         Usuario anfitrion2 = new Usuario(
             UUID.randomUUID().toString(),
             "Pedro Rodríguez",
             "pedro.rodriguez@gmail.com",
             "3184567890",
-            "anfitrion123",
+            HashUtil.hashPassword("anfitrion123"),
             "Anfitrion"
         );
         listaUsuarios.add(anfitrion2);
-        
+
         System.out.println("✅ Datos de prueba cargados: " + listaUsuarios.size() + " usuarios");
         System.out.println("   - Admin: admin@admin.com / 1234");
-        System.out.println("   - Viajeros: 2");
-        System.out.println("   - Anfitriones: 2");
+        System.out.println("   - Viajeros: 2 (contraseña: viajero123)");
+        System.out.println("   - Anfitriones: 2 (contraseña: anfitrion123)");
+        System.out.println("   ⚠️ Contraseñas almacenadas con hash SHA-256");
     }
     
     //   MÉTODOS DE UTILIDAD  

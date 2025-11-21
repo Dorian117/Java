@@ -79,10 +79,11 @@ public class ControladorRegistro {
             return new ResultadoRegistro(false, "El teléfono debe tener 10 dígitos");
         }
         
-        //   REGISTRO: Crear usuario  
-        Usuario nuevoUsuario = new Usuario(nombre.trim(), email.trim(), 
-                                          telefono.trim(), contrasena, rol);
-        
+        //   REGISTRO: Crear usuario con contraseña hasheada
+        String contrasenaHasheada = modelo.HashUtil.hashPassword(contrasena);
+        Usuario nuevoUsuario = new Usuario(nombre.trim(), email.trim(),
+                                          telefono.trim(), contrasenaHasheada, rol);
+
         boolean registrado = dao.registrarUsuario(nuevoUsuario);
         
         if (registrado) {
