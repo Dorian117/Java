@@ -1,0 +1,9 @@
+controlador\MenuPrincipalControlador.class
+modelo\UsuarioData.class
+vista\Registro.class
+vista\MenuPrincipal.class
+vista\MenuPropiedades.class
+vista\InicioSesion.class
+controlador\InicioControlador.class
+modelo\Usuario.class
+com\mycompany\proyecto\Staykonnect.class
