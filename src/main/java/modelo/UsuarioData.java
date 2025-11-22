@@ -65,13 +65,12 @@ public class UsuarioData {
     /**
      * Busca un usuario por email y contraseña
      * @param email Email del usuario
-     * @param contrasena Contraseña del usuario (en texto plano)
+     * @param contrasena Contraseña del usuario (texto plano)
      * @return Usuario si los datos son correctos, null si no
      */
     public Usuario buscarUsuario(String email, String contrasena) {
         for (Usuario u : listaUsuarios) {
-            if (u.getEmail().equalsIgnoreCase(email) &&
-                HashUtil.verificarPassword(contrasena, u.getContrasena())) {
+            if (u.getEmail().equalsIgnoreCase(email) && u.getContrasena().equals(contrasena)) {
                 return u;
             }
         }
@@ -174,7 +173,6 @@ public class UsuarioData {
     /**
      * Carga usuarios de ejemplo para pruebas
      * Solo se ejecuta una vez al inicio
-     * NOTA: Las contraseñas se almacenan hasheadas con SHA-256
      */
     private void cargarDatosPrueba() {
         // Usuario Admin (contraseña: 1234)
@@ -183,7 +181,7 @@ public class UsuarioData {
             "Administrador",
             "admin@admin.com",
             "3001234567",
-            HashUtil.hashPassword("1234"),
+            "1234",
             "Admin"
         );
         listaUsuarios.add(admin);
@@ -194,7 +192,7 @@ public class UsuarioData {
             "Carlos Pérez",
             "carlos.perez@gmail.com",
             "3101234567",
-            HashUtil.hashPassword("viajero123"),
+            "viajero123",
             "Viajero"
         );
         listaUsuarios.add(viajero1);
@@ -205,7 +203,7 @@ public class UsuarioData {
             "Ana Martínez",
             "ana.martinez@gmail.com",
             "3159876543",
-            HashUtil.hashPassword("viajero123"),
+            "viajero123",
             "Viajero"
         );
         listaUsuarios.add(viajero2);
@@ -216,7 +214,7 @@ public class UsuarioData {
             "María González",
             "maria.gonzalez@gmail.com",
             "3201234567",
-            HashUtil.hashPassword("anfitrion123"),
+            "anfitrion123",
             "Anfitrion"
         );
         listaUsuarios.add(anfitrion1);
@@ -227,7 +225,7 @@ public class UsuarioData {
             "Pedro Rodríguez",
             "pedro.rodriguez@gmail.com",
             "3184567890",
-            HashUtil.hashPassword("anfitrion123"),
+            "anfitrion123",
             "Anfitrion"
         );
         listaUsuarios.add(anfitrion2);
@@ -236,7 +234,6 @@ public class UsuarioData {
         System.out.println("   - Admin: admin@admin.com / 1234");
         System.out.println("   - Viajeros: 2 (contraseña: viajero123)");
         System.out.println("   - Anfitriones: 2 (contraseña: anfitrion123)");
-        System.out.println("   ⚠️ Contraseñas almacenadas con hash SHA-256");
     }
     
     //   MÉTODOS DE UTILIDAD  
